@@ -1,5 +1,5 @@
 // Increment this version number (e.g., v2, v3, v4) every time you commit code changes
-const CACHE_NAME = 'rummy-app-v2'; 
+const CACHE_NAME = 'rummy-app-v3'; 
 const ASSETS = [
   './',
   './index.html',
