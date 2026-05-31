@@ -217,6 +217,24 @@ let savedProfiles = JSON.parse(localStorage.getItem('rummy_profiles')) || [];
     }
 
     function clearAllHistory() { if (confirm("Wipe all logs?")) { gameHistory = []; localStorage.removeItem('rummy_history'); renderGameHistory(); } }
+
+    function forceAppCacheUpdate() {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            for(let registration of registrations) {
+                registration.unregister(); // Unregisters current offline loop
+            }
+            // Clears browser's cache storage allocation completely
+            caches.keys().then(function(names) {
+                for (let name of names) caches.delete(name);
+            });
+            alert("Cache cleared! App will now restart to fetch latest GitHub code.");
+            window.location.reload(true); // Forces clean network refresh bypass
+        });
+    } else {
+        window.location.reload(true);
+    }
+    }
 </script>
 </body>
 </html>
