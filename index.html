@@ -88,7 +88,7 @@
 </div>
 
 <script>
-    let savedProfiles = JSON.parse(localStorage.getItem('rummy_profiles')) || [];
+let savedProfiles = JSON.parse(localStorage.getItem('rummy_profiles')) || [];
     let gameHistory = JSON.parse(localStorage.getItem('rummy_history')) || [];
     let selectedForGame = [], players = [], rounds = [], winShares = [], gameActive = false;
 
@@ -109,7 +109,7 @@
         if (!confirm(`Delete profile "${name}"?`)) return;
         savedProfiles = savedProfiles.filter(p => p !== name); selectedForGame = selectedForGame.filter(p => p !== name);
         localStorage.setItem('rummy_profiles', JSON.stringify(savedProfiles));
-        if (gameActive && players.includes(name)) { players = []; rounds = []; winShares = []; gameActive = false; }
+        if (gameActive && players.includes(name)) { gameActive = false; players = []; rounds = []; winShares = []; }
         renderRosterSelector(); updateTableStructure();
     }
 
@@ -140,6 +140,7 @@
 
     function updateTableStructure() {
         const state = gameActive && players.length;
+        // Adjusted to reflect the removal of the 2-column menu layout grid
         document.getElementById('input-row').style.display = state ? 'table-row' : 'none';
         document.getElementById('totals-row').style.display = state ? 'table-row' : 'none';
         document.getElementById('share-row').style.display = state ? 'table-row' : 'none';
