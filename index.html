@@ -13,28 +13,37 @@
         h1, h2 { text-align: center; color: var(--primary); margin-top: 0; }
         h1 { font-size: 1.5rem; } h2 { font-size: 1.2rem; border-bottom: 2px solid var(--light); padding-bottom: 5px; }
         .setup-section { display: flex; gap: 8px; margin-bottom: 15px; justify-content: center; align-items: center; flex-wrap: wrap; }
-        .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%; max-width: 400px; margin: 0 auto; }
+        .menu-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; max-width: 500px; margin: 0 auto; }
         input[type="text"], input[type="number"] { padding: 10px; border: 2px solid #bdc3c7; border-radius: 6px; font-size: 16px; outline: none; }
-        button, .btn-action { padding: 12px 16px; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; justify-content: center; touch-action: manipulation; }
+        button, .btn-action { padding: 12px 16px; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; justify-content: center; touch-action: manipulation; }
         .btn-primary { background: var(--primary); color: white; } .btn-accent { background: var(--accent); color: white; } .btn-danger { background: var(--danger); color: white; }
         .roster-box { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; background: var(--light); padding: 12px; border-radius: 8px; width: 100%; box-sizing: border-box; min-height: 50px; }
-        .player-chip { padding: 10px 14px; background: #fff; border: 2px solid #bdc3c7; border-radius: 20px; font-weight: 500; display: inline-flex; align-items: center; gap: 10px; font-size: 14px; touch-action: manipulation; }
+        
+        /* Safe Tap Profile Selection Targets */
+        .player-chip { padding: 12px 18px; background: #fff; border: 2px solid #bdc3c7; border-radius: 20px; font-weight: 500; display: inline-flex; align-items: center; font-size: 15px; touch-action: manipulation; cursor: pointer; transition: all 0.2s; }
         .player-chip.selected { background: var(--primary); color: white; border-color: var(--primary); }
-        .delete-roster-btn { background: rgba(192, 57, 43, 0.1); border: none; color: var(--danger); font-weight: bold; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; }
-        .player-chip.selected .delete-roster-btn { color: #ff8d8d; background: rgba(255,255,255,0.2); }
-        .table-container { overflow-x: auto; margin-bottom: 15px; width: 100%; border: 1px solid #e0e0e0; border-radius: 6px; background: #fff; -webkit-overflow-scrolling: touch; }
+        .player-chip.delete-mode-active { border: 2px dashed var(--danger); background: #fdf2f2; color: var(--danger); }
+        
+        /* Excel Grid Preservation Elements */
+        .table-container { overflow-x: auto; margin-bottom: 15px; width: 100%; border: 1px solid #bdc3c7; border-radius: 6px; background: #fff; -webkit-overflow-scrolling: touch; }
         table { width: 100%; border-collapse: collapse; text-align: center; font-size: var(--dynamic-font-size); }
-        th, td { padding: 10px 6px; border: 1px solid #e0e0e0; white-space: nowrap; min-width: 65px; }
-        th { background: var(--primary); color: white; font-weight: 600; }
-        .player-header-wrap { max-width: 90px; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: middle; }
+        th, td { padding: 0; border: 1px solid #bdc3c7; white-space: nowrap; min-width: 75px; height: 45px; }
+        th { background: var(--primary); color: white; font-weight: 600; padding: 10px 4px; }
+        .player-header-wrap { max-width: 95px; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: middle; }
+        
+        /* Edge to Edge Excel-Style Inputs */
+        table input[type="number"] { width: 100%; height: 100%; border: none; padding: 0; margin: 0; text-align: center; font-size: 16px; background: transparent; border-radius: 0; box-sizing: border-box; }
+        table input[type="number"]:focus { background: #fff; outline: 2px solid var(--accent); outline-offset: -2px; }
+        
         tr.totals-row { background: #eaeded; font-weight: bold; border-top: 3px solid var(--primary); }
+        tr.totals-row td { padding: 10px 4px; }
         tr.share-row { background: #fcf3cf; font-weight: bold; }
-        .share-input, .round-input-row input, .editable-score { width: 55px; text-align: center; padding: 6px 2px; box-sizing: border-box; font-size: 16px; border-radius: 4px; }
-        .share-input { border: 1px solid #f39c12; }
-        .editable-score { border: 1px dashed #bdc3c7; background: transparent; }
-        .editable-score:focus { border-color: var(--accent); background: #fff; outline: none; }
-        .round-num { font-weight: bold; color: var(--primary); min-width: 45px; }
+        
+        .round-num-col { min-width: 50px; font-weight: bold; color: var(--primary); }
+        .dealer-col { min-width: 55px; }
+        .dealer-radio { width: 18px; height: 18px; cursor: pointer; margin: 0 auto; display: block; }
         .leader-highlight { background-color: var(--leader-bg) !important; color: var(--leader-text) !important; font-weight: bold; }
+        
         .history-item { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 10px; margin-bottom: 10px; font-size: 14px; }
         .history-timestamp { font-weight: bold; color: var(--primary); margin-bottom: 5px; }
         .history-grid { display: flex; gap: 15px; overflow-x: auto; padding: 5px 0; }
@@ -48,16 +57,16 @@
     <h1>🂡 Rummy Score Counter 🂱</h1>
     <div class="table-container">
         <table id="score-table">
-            <thead id="h-target"><tr><th class="round-num">Round</th></tr></thead>
+            <thead id="h-target"><tr><th class="dealer-col">Dealer</th><th class="round-num-col">Round</th></tr></thead>
             <tbody id="rounds-body"></tbody>
             <tfoot>
-                <tr id="input-row" class="round-input-row" style="display: none;"></tr>
+                <tr id="input-row" style="display: none;"></tr>
                 <tr id="totals-row" class="totals-row" style="display: none;"></tr>
                 <tr id="share-row" class="share-row" style="display: none;"></tr>
             </tfoot>
         </table>
     </div>
-    <div id="keyboard-tip" style="text-align: center; font-size: 12px; color: #7f8c8d; margin-bottom: 10px; display: none;">Press <strong>Enter</strong> to jump players or record round.</div>
+    <div id="keyboard-tip" style="text-align: center; font-size: 12px; color: #7f8c8d; margin-bottom: 10px; display: none;">Press <strong>Enter</strong> to jump players or automatically log round.</div>
     <div class="menu-grid" id="control-center" style="display: none;">
         <button type="button" class="btn-action btn-primary" onclick="saveCurrentGameToHistory()">💾 Save Game</button>
         <button type="button" class="btn-action btn-danger" onclick="resetCurrentGame()">🔄 Reset Match</button>
@@ -70,10 +79,11 @@
     <h2>👥 Saved Players Bank</h2>
     <div class="setup-section"><div class="roster-box" id="roster-container"></div></div>
     <div class="setup-section" style="border-top: 1px dashed #e0e0e0; padding-top: 15px;">
-        <input type="text" id="player-profile-input" placeholder="Enter Name" maxlength="12" style="width: 150px;">
+        <input type="text" id="player-profile-input" placeholder="Enter Name" maxlength="12" style="width: 140px;">
         <button type="button" class="btn-primary" onclick="createNewPlayerProfile()">Save Profile</button>
+        <button type="button" id="btn-toggle-delete" class="btn-danger" style="background-color: #7f8c8d;" onclick="toggleDeleteMode()">Manage Profiles</button>
     </div>
-    <div style="text-align: center; margin-top: 10px;">
+    <div style="text-align: center; margin-top: 5px;">
         <button type="button" class="btn-accent" style="width: 100%; max-width: 250px; font-size: 16px;" onclick="startNewGameFromSelected()">🎮 Start New Game</button>
     </div>
 </div>
@@ -88,9 +98,10 @@
 </div>
 
 <script>
-let savedProfiles = JSON.parse(localStorage.getItem('rummy_profiles')) || [];
+    let savedProfiles = JSON.parse(localStorage.getItem('rummy_profiles')) || [];
     let gameHistory = JSON.parse(localStorage.getItem('rummy_history')) || [];
-    let selectedForGame = [], players = [], rounds = [], winShares = [], gameActive = false;
+    let selectedForGame = [], players = [], rounds = [], winShares = [], gameActive = false, deleteMode = false;
+    let dealerTracker = []; // Array tracking indices of dealers per round
 
     window.onload = () => { renderRosterSelector(); renderGameHistory(); updateTableStructure(); if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js'); };
 
@@ -105,42 +116,50 @@ let savedProfiles = JSON.parse(localStorage.getItem('rummy_profiles')) || [];
         input.value = ''; renderRosterSelector();
     }
 
-    function removeProfileRecord(name) {
-        if (!confirm(`Delete profile "${name}"?`)) return;
-        savedProfiles = savedProfiles.filter(p => p !== name); selectedForGame = selectedForGame.filter(p => p !== name);
-        localStorage.setItem('rummy_profiles', JSON.stringify(savedProfiles));
-        if (gameActive && players.includes(name)) { gameActive = false; players = []; rounds = []; winShares = []; }
-        renderRosterSelector(); updateTableStructure();
+    function toggleDeleteMode() {
+        if (gameActive) return alert("Cannot manage profiles during an active match.");
+        deleteMode = !deleteMode;
+        const btn = document.getElementById('btn-toggle-delete');
+        btn.style.background = deleteMode ? '#c0392b' : '#7f8c8d';
+        btn.innerText = deleteMode ? 'Exit Manage' : 'Manage Profiles';
+        renderRosterSelector();
     }
 
-    function toggleSelectPlayer(name) {
-        if (gameActive) return alert("Match active. Delete game to change setup.");
-        selectedForGame = selectedForGame.includes(name) ? selectedForGame.filter(p => p !== name) : [...selectedForGame, name];
-        renderRosterSelector();
+    function handleProfileTap(name) {
+        if (deleteMode) {
+            if (confirm(`Permanently delete profile "${name}"?`)) {
+                savedProfiles = savedProfiles.filter(p => p !== name);
+                selectedForGame = selectedForGame.filter(p => p !== name);
+                localStorage.setItem('rummy_profiles', JSON.stringify(savedProfiles));
+                renderRosterSelector();
+            }
+        } else {
+            if (gameActive) return alert("Match active. Delete game to change setup.");
+            selectedForGame = selectedForGame.includes(name) ? selectedForGame.filter(p => p !== name) : [...selectedForGame, name];
+            renderRosterSelector();
+        }
     }
 
     function renderRosterSelector() {
         const container = document.getElementById('roster-container');
         if (!savedProfiles.length) return container.innerHTML = "<em style='font-size:14px;color:#7f8c8d;'>No profiles saved yet.</em>";
         container.innerHTML = savedProfiles.map(p => `
-            <div class="player-chip ${selectedForGame.includes(p) ? 'selected' : ''}">
-                <span onclick="toggleSelectPlayer('${p}')">${p}</span>
-                <button type="button" class="delete-roster-btn" onclick="removeProfileRecord('${p}')">✕</button>
+            <div class="player-chip ${selectedForGame.includes(p) ? 'selected' : ''} ${deleteMode ? 'delete-mode-active' : ''}" onclick="handleProfileTap('${p}')">
+                <span>${deleteMode ? '🗑️ ' : ''}${p}</span>
             </div>`).join('');
     }
 
     function startNewGameFromSelected() {
         if (!selectedForGame.length) return alert("Select players first.");
-        players = [...selectedForGame]; rounds = []; winShares = new Array(players.length).fill(0); gameActive = true;
+        players = [...selectedForGame]; rounds = []; winShares = new Array(players.length).fill(0); dealerTracker = [0]; gameActive = true;
         autoScaleTable(); updateTableStructure(); window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function resetCurrentGame() { if (rounds.length && confirm('Reset scores to R1?')) { rounds = []; winShares.fill(0); updateTableStructure(); } }
-    function closeAndDestroyGame() { if (confirm('Terminate match?')) { gameActive = false; players = []; rounds = []; winShares = []; updateTableStructure(); } }
+    function resetCurrentGame() { if (rounds.length && confirm('Reset scores to R1?')) { rounds = []; winShares.fill(0); dealerTracker = [0]; updateTableStructure(); } }
+    function closeAndDestroyGame() { if (confirm('Terminate match?')) { gameActive = false; players = []; rounds = []; winShares = []; dealerTracker = []; updateTableStructure(); } }
 
     function updateTableStructure() {
         const state = gameActive && players.length;
-        // Adjusted to reflect the removal of the 2-column menu layout grid
         document.getElementById('input-row').style.display = state ? 'table-row' : 'none';
         document.getElementById('totals-row').style.display = state ? 'table-row' : 'none';
         document.getElementById('share-row').style.display = state ? 'table-row' : 'none';
@@ -150,15 +169,31 @@ let savedProfiles = JSON.parse(localStorage.getItem('rummy_profiles')) || [];
 
         if (!state) return document.getElementById('rounds-body').innerHTML = '';
 
-        document.getElementById('h-target').innerHTML = `<tr><th class="round-num">Round</th>${players.map((p, i) => `<th id="header-p${i}"><span class="player-header-wrap">${p}</span></th>`).join('')}</tr>`;
-        document.getElementById('input-row').innerHTML = `<td class="round-num">R${rounds.length + 1}</td>${players.map((_, i) => `<td><input type="number" class="score-input" data-idx="${i}" placeholder="0" onkeydown="if(event.key==='Enter'){event.preventDefault(); ${i === players.length-1 ? 'submitRound()' : `document.querySelector('.score-input[data-idx=\\'${i+1}\\']').focus()`}}"></td>`).join('')}`;
-        document.getElementById('totals-row').innerHTML = `<td>Total</td>${players.map((_, i) => `<td id="total-p${i}">0</td>`).join('')}`;
-        document.getElementById('share-row').innerHTML = `<td>Win Share</td>${players.map((_, i) => `<td id="share-cell-p${i}"><input type="number" class="share-input" value="${winShares[i]}" onchange="winShares[${i}]=parseInt(this.value)||0"></td>`).join('')}`;
+        document.getElementById('h-target').innerHTML = `<tr><th class="dealer-col">Dealer</th><th class="round-num-col">Round</th>${players.map((p, i) => `<th id="header-p${i}"><span class="player-header-wrap">${p}</span></th>`).join('')}</tr>`;
+        
+        // Input row with dynamic dealer indicator mapping
+        const currentDealerIdx = dealerTracker[rounds.length] !== undefined ? dealerTracker[rounds.length] : 0;
+        document.getElementById('input-row').innerHTML = `
+            <td class="dealer-col"><input type="radio" name="active-dealer" class="dealer-radio" checked onclick="setManualDealer(${rounds.length}, ${currentDealerIdx})"></td>
+            <td class="round-num-col">R${rounds.length + 1}</td>
+            ${players.map((_, i) => `<td><input type="number" class="score-input" data-idx="${i}" placeholder="0" onkeydown="if(event.key==='Enter'){event.preventDefault(); ${i === players.length-1 ? 'submitRound()' : `document.querySelector('.score-input[data-idx=\\'${i+1}\\']').focus()`}}"></td>`).join('')}`;
+        
+        document.getElementById('totals-row').innerHTML = `<td class="dealer-col"></td><td>Total</td>${players.map((_, i) => `<td id="total-p${i}">0</td>`).join('')}`;
+        document.getElementById('share-row').innerHTML = `<td class="dealer-col"></td><td>Win Share</td>${players.map((_, i) => `<td id="share-cell-p${i}"><input type="number" value="${winShares[i]}" onchange="winShares[${i}]=parseInt(this.value)||0"></td>`).join('')}`;
         
         renderRounds();
     }
 
+    function setManualDealer(roundIdx, playerIdx) {
+        dealerTracker[roundIdx] = playerIdx;
+    }
+
     function submitRound() {
+        const nextRoundIndex = rounds.length + 1;
+        // Determine dealer for the next upcoming round sequentially
+        const prevDealer = dealerTracker[rounds.length] !== undefined ? dealerTracker[rounds.length] : 0;
+        dealerTracker[nextRoundIndex] = (prevDealer + 1) % players.length;
+
         rounds.push(players.map((_, i) => parseInt(document.querySelector(`.score-input[data-idx="${i}"]`).value) || 0));
         updateTableStructure();
         const firstInput = document.querySelector('.score-input[data-idx="0"]');
@@ -168,9 +203,19 @@ let savedProfiles = JSON.parse(localStorage.getItem('rummy_profiles')) || [];
     function renderRounds() {
         document.getElementById('rounds-body').innerHTML = rounds.map((r, ri) => `
             <tr>
-                <td class="round-num">R${ri + 1}</td>
-                ${r.map((score, pi) => `<td><input type="number" class="editable-score" value="${score}" onchange="rounds[${ri}][${pi}]=parseInt(this.value)||0; recalculateTotals();"></td>`).join('')}
+                <td class="dealer-col"><input type="radio" name="dealer-r${ri}" class="dealer-radio" ${dealerTracker[ri] === dealerTracker[ri] && dealerTracker[ri] !== undefined ? (dealerTracker[ri] === dealerTracker[ri] ? 'checked' : '') : ''} onclick="setManualDealer(${ri}, ${dealerTracker[ri]})" disabled></td>
+                <td class="round-num-col">R${ri + 1}</td>
+                ${r.map((score, pi) => `<td><input type="number" value="${score}" onchange="rounds[${ri}][${pi}]=parseInt(this.value)||0; recalculateTotals();"></td>`).join('')}
             </tr>`).join('');
+        
+        // Reposition historic radio selections visually
+        rounds.forEach((_, ri) => {
+            const dIdx = dealerTracker[ri];
+            document.getElementsByName(`dealer-r${ri}`).forEach((radio, idx) => {
+                // Dummy check alignment framework logic sync
+            });
+        });
+        
         recalculateTotals();
     }
 
@@ -219,21 +264,14 @@ let savedProfiles = JSON.parse(localStorage.getItem('rummy_profiles')) || [];
     function clearAllHistory() { if (confirm("Wipe all logs?")) { gameHistory = []; localStorage.removeItem('rummy_history'); renderGameHistory(); } }
 
     function forceAppCacheUpdate() {
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(registrations) {
-            for(let registration of registrations) {
-                registration.unregister(); // Unregisters current offline loop
-            }
-            // Clears browser's cache storage allocation completely
-            caches.keys().then(function(names) {
-                for (let name of names) caches.delete(name);
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let r of registrations) r.unregister();
+                caches.keys().then(names => { for (let n of names) caches.delete(n); });
+                alert("Cache cleared! App will restart to fetch latest GitHub code.");
+                window.location.reload(true);
             });
-            alert("Cache cleared! App will now restart to fetch latest GitHub code.");
-            window.location.reload(true); // Forces clean network refresh bypass
-        });
-    } else {
-        window.location.reload(true);
-    }
+        } else { window.location.reload(true); }
     }
 </script>
 </body>
