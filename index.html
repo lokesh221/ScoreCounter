@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rummy Score Counter</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2c3e50">
+    <style>
+        :root { --primary: #2c3e50; --accent: #27ae60; --danger: #c0392b; --light: #ecf0f1; --dark: #34495e; --leader-bg: #d4edda; --leader-text: #155724; --dynamic-font-size: 16px; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f5f7fa; color: var(--dark); margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
+        .container { width: 100%; max-width: 900px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); box-sizing: border-box; margin-bottom: 15px; }
+        h1, h2 { text-align: center; color: var(--primary); margin-top: 0; }
+        h1 { font-size: 1.5rem; } h2 { font-size: 1.2rem; border-bottom: 2px solid var(--light); padding-bottom: 5px; }
+        .setup-section { display: flex; gap: 8px; margin-bottom: 15px; justify-content: center; align-items: center; flex-wrap: wrap; }
+        .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%; max-width: 400px; margin: 0 auto; }
+        input[type="text"], input[type="number"] { padding: 10px; border: 2px solid #bdc3c7; border-radius: 6px; font-size: 16px; outline: none; }
+        button, .btn-action { padding: 12px 16px; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; justify-content: center; touch-action: manipulation; }
+        .btn-primary { background: var(--primary); color: white; } .btn-accent { background: var(--accent); color: white; } .btn-danger { background: var(--danger); color: white; }
+        .roster-box { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; background: var(--light); padding: 12px; border-radius: 8px; width: 100%; box-sizing: border-box; min-height: 50px; }
+        .player-chip { padding: 10px 14px; background: #fff; border: 2px solid #bdc3c7; border-radius: 20px; font-weight: 500; display: inline-flex; align-items: center; gap: 10px; font-size: 14px; touch-action: manipulation; }
+        .player-chip.selected { background: var(--primary); color: white; border-color: var(--primary); }
+        .delete-roster-btn { background: rgba(192, 57, 43, 0.1); border: none; color: var(--danger); font-weight: bold; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; }
+        .player-chip.selected .delete-roster-btn { color: #ff8d8d; background: rgba(255,255,255,0.2); }
+        .table-container { overflow-x: auto; margin-bottom: 15px; width: 100%; border: 1px solid #e0e0e0; border-radius: 6px; background: #fff; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: collapse; text-align: center; font-size: var(--dynamic-font-size); }
+        th, td { padding: 10px 6px; border: 1px solid #e0e0e0; white-space: nowrap; min-width: 65px; }
+        th { background: var(--primary); color: white; font-weight: 600; }
+        .player-header-wrap { max-width: 90px; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: middle; }
+        tr.totals-row { background: #eaeded; font-weight: bold; border-top: 3px solid var(--primary); }
+        tr.share-row { background: #fcf3cf; font-weight: bold; }
+        .share-input, .round-input-row input, .editable-score { width: 55px; text-align: center; padding: 6px 2px; box-sizing: border-box; font-size: 16px; border-radius: 4px; }
+        .share-input { border: 1px solid #f39c12; }
+        .editable-score { border: 1px dashed #bdc3c7; background: transparent; }
+        .editable-score:focus { border-color: var(--accent); background: #fff; outline: none; }
+        .round-num { font-weight: bold; color: var(--primary); min-width: 45px; }
+        .leader-highlight { background-color: var(--leader-bg) !important; color: var(--leader-text) !important; font-weight: bold; }
+        .history-item { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 10px; margin-bottom: 10px; font-size: 14px; }
+        .history-timestamp { font-weight: bold; color: var(--primary); margin-bottom: 5px; }
+        .history-grid { display: flex; gap: 15px; overflow-x: auto; padding: 5px 0; }
+        .history-player { background: #f8f9fa; padding: 5px 10px; border-radius: 4px; border-left: 3px solid #bdc3c7; }
+        .history-player.winner { background: var(--leader-bg); border-left-color: var(--accent); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🂡 Rummy Score Counter 🂱</h1>
+    <div class="table-container">
+        <table id="score-table">
+            <thead id="h-target"><tr><th class="round-num">Round</th></tr></thead>
+            <tbody id="rounds-body"></tbody>
+            <tfoot>
+                <tr id="input-row" class="round-input-row" style="display: none;"></tr>
+                <tr id="totals-row" class="totals-row" style="display: none;"></tr>
+                <tr id="share-row" class="share-row" style="display: none;"></tr>
+            </tfoot>
+        </table>
+    </div>
+    <div id="keyboard-tip" style="text-align: center; font-size: 12px; color: #7f8c8d; margin-bottom: 10px; display: none;">Press <strong>Enter</strong> to jump players or record round.</div>
+    <div class="menu-grid" id="control-center" style="display: none;">
+        <button type="button" class="btn-action btn-accent" onclick="submitRound()">Record Round</button>
+        <button type="button" class="btn-action btn-primary" onclick="saveCurrentGameToHistory()">💾 Save Game</button>
+        <button type="button" class="btn-action btn-danger" onclick="resetCurrentGame()">🔄 Reset Match</button>
+        <button type="button" class="btn-action btn-danger" style="background-color: #7f8c8d;" onclick="closeAndDestroyGame()">❌ Delete Game</button>
+    </div>
+    <div id="no-game-message" style="text-align: center; color: #7f8c8d; padding: 20px 0; font-weight: bold;">No active match. Select players below and tap "Start New Game".</div>
+</div>
+
+<div class="container">
+    <h2>👥 Saved Players Bank</h2>
+    <div class="setup-section"><div class="roster-box" id="roster-container"></div></div>
+    <div class="setup-section" style="border-top: 1px dashed #e0e0e0; padding-top: 15px;">
+        <input type="text" id="player-profile-input" placeholder="Enter Name" maxlength="12" style="width: 150px;">
+        <button type="button" class="btn-primary" onclick="createNewPlayerProfile()">Save Profile</button>
+    </div>
+    <div style="text-align: center; margin-top: 10px;">
+        <button type="button" class="btn-accent" style="width: 100%; max-width: 250px; font-size: 16px;" onclick="startNewGameFromSelected()">🎮 Start New Game</button>
+    </div>
+</div>
+
+<div class="container">
+    <h2>📋 Match Records History</h2>
+    <div id="history-container"></div>
+    <div style="text-align: center; margin-top: 10px;">
+        <button type="button" class="btn-danger" onclick="clearAllHistory()" style="padding: 5px 10px; font-size: 12px;">Clear History Records</button>
+    </div>
+</div>
+
+<script>
+    let savedProfiles = JSON.parse(localStorage.getItem('rummy_profiles')) || [];
+    let gameHistory = JSON.parse(localStorage.getItem('rummy_history')) || [];
+    let selectedForGame = [], players = [], rounds = [], winShares = [], gameActive = false;
+
+    window.onload = () => { renderRosterSelector(); renderGameHistory(); updateTableStructure(); if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js'); };
+
+    function autoScaleTable() {
+        document.documentElement.style.setProperty('--dynamic-font-size', (players.length >= 6 ? 13 : players.length === 5 ? 14 : 16) + 'px');
+    }
+
+    function createNewPlayerProfile() {
+        const input = document.getElementById('player-profile-input'), name = input.value.trim();
+        if (!name || savedProfiles.includes(name)) return;
+        savedProfiles.push(name); localStorage.setItem('rummy_profiles', JSON.stringify(savedProfiles));
+        input.value = ''; renderRosterSelector();
+    }
+
+    function removeProfileRecord(name) {
+        if (!confirm(`Delete profile "${name}"?`)) return;
+        savedProfiles = savedProfiles.filter(p => p !== name); selectedForGame = selectedForGame.filter(p => p !== name);
+        localStorage.setItem('rummy_profiles', JSON.stringify(savedProfiles));
+        if (gameActive && players.includes(name)) { players = []; rounds = []; winShares = []; gameActive = false; }
+        renderRosterSelector(); updateTableStructure();
+    }
+
+    function toggleSelectPlayer(name) {
+        if (gameActive) return alert("Match active. Delete game to change setup.");
+        selectedForGame = selectedForGame.includes(name) ? selectedForGame.filter(p => p !== name) : [...selectedForGame, name];
+        renderRosterSelector();
+    }
+
+    function renderRosterSelector() {
+        const container = document.getElementById('roster-container');
+        if (!savedProfiles.length) return container.innerHTML = "<em style='font-size:14px;color:#7f8c8d;'>No profiles saved yet.</em>";
+        container.innerHTML = savedProfiles.map(p => `
+            <div class="player-chip ${selectedForGame.includes(p) ? 'selected' : ''}">
+                <span onclick="toggleSelectPlayer('${p}')">${p}</span>
+                <button type="button" class="delete-roster-btn" onclick="removeProfileRecord('${p}')">✕</button>
+            </div>`).join('');
+    }
+
+    function startNewGameFromSelected() {
+        if (!selectedForGame.length) return alert("Select players first.");
+        players = [...selectedForGame]; rounds = []; winShares = new Array(players.length).fill(0); gameActive = true;
+        autoScaleTable(); updateTableStructure(); window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function resetCurrentGame() { if (rounds.length && confirm('Reset scores to R1?')) { rounds = []; winShares.fill(0); updateTableStructure(); } }
+    function closeAndDestroyGame() { if (confirm('Terminate match?')) { gameActive = false; players = []; rounds = []; winShares = []; updateTableStructure(); } }
+
+    function updateTableStructure() {
+        const state = gameActive && players.length;
+        document.getElementById('input-row').style.display = state ? 'table-row' : 'none';
+        document.getElementById('totals-row').style.display = state ? 'table-row' : 'none';
+        document.getElementById('share-row').style.display = state ? 'table-row' : 'none';
+        document.getElementById('control-center').style.display = state ? 'grid' : 'none';
+        document.getElementById('keyboard-tip').style.display = state ? 'block' : 'none';
+        document.getElementById('no-game-message').style.display = state ? 'none' : 'block';
+
+        if (!state) return document.getElementById('rounds-body').innerHTML = '';
+
+        document.getElementById('h-target').innerHTML = `<tr><th class="round-num">Round</th>${players.map((p, i) => `<th id="header-p${i}"><span class="player-header-wrap">${p}</span></th>`).join('')}</tr>`;
+        document.getElementById('input-row').innerHTML = `<td class="round-num">R${rounds.length + 1}</td>${players.map((_, i) => `<td><input type="number" class="score-input" data-idx="${i}" placeholder="0" onkeydown="if(event.key==='Enter'){event.preventDefault(); ${i === players.length-1 ? 'submitRound()' : `document.querySelector('.score-input[data-idx=\\'${i+1}\\']').focus()`}}"></td>`).join('')}`;
+        document.getElementById('totals-row').innerHTML = `<td>Total</td>${players.map((_, i) => `<td id="total-p${i}">0</td>`).join('')}`;
+        document.getElementById('share-row').innerHTML = `<td>Win Share</td>${players.map((_, i) => `<td id="share-cell-p${i}"><input type="number" class="share-input" value="${winShares[i]}" onchange="winShares[${i}]=parseInt(this.value)||0"></td>`).join('')}`;
+        
+        renderRounds();
+    }
+
+    function submitRound() {
+        rounds.push(players.map((_, i) => parseInt(document.querySelector(`.score-input[data-idx="${i}"]`).value) || 0));
+        updateTableStructure();
+        const firstInput = document.querySelector('.score-input[data-idx="0"]');
+        if (firstInput) firstInput.focus();
+    }
+
+    function renderRounds() {
+        document.getElementById('rounds-body').innerHTML = rounds.map((r, ri) => `
+            <tr>
+                <td class="round-num">R${ri + 1}</td>
+                ${r.map((score, pi) => `<td><input type="number" class="editable-score" value="${score}" onchange="rounds[${ri}][${pi}]=parseInt(this.value)||0; recalculateTotals();"></td>`).join('')}
+            </tr>`).join('');
+        recalculateTotals();
+    }
+
+    function recalculateTotals() {
+        if (!players.length) return;
+        const totals = new Array(players.length).fill(0);
+        rounds.forEach(r => r.forEach((s, pi) => totals[pi] += s));
+
+        players.forEach((_, i) => {
+            const tCell = document.getElementById(`total-p${i}`); if (tCell) tCell.innerText = totals[i];
+            ['header-p', 'total-p', 'share-cell-p'].forEach(id => document.getElementById(`${id}${i}`)?.classList.remove('leader-highlight'));
+        });
+
+        if (rounds.length) {
+            const min = Math.min(...totals);
+            totals.forEach((s, i) => { if (s === min) ['header-p', 'total-p', 'share-cell-p'].forEach(id => document.getElementById(`${id}${i}`)?.classList.add('leader-highlight')); });
+        }
+    }
+
+    function saveCurrentGameToHistory() {
+        if (!rounds.length) return alert("No rounds recorded.");
+        const totals = new Array(players.length).fill(0);
+        rounds.forEach(r => r.forEach((s, pi) => totals[pi] += s));
+        const min = Math.min(...totals);
+
+        gameHistory.unshift({
+            timestamp: new Date().toLocaleString(),
+            results: players.map((name, i) => ({ name, total: totals[i], share: winShares[i], isWinner: totals[i] === min }))
+        });
+        localStorage.setItem('rummy_history', JSON.stringify(gameHistory));
+        renderGameHistory(); alert("Match saved!");
+    }
+
+    function renderGameHistory() {
+        const container = document.getElementById('history-container');
+        if (!gameHistory.length) return container.innerHTML = "<p style='text-align:center; font-size:14px; color:#7f8c8d; margin:0;'>No records.</p>";
+        container.innerHTML = gameHistory.map(m => `
+            <div class="history-item">
+                <div class="history-timestamp">📅 ${m.timestamp}</div>
+                <div class="history-grid">
+                    ${m.results.map(r => `<div class="history-player ${r.isWinner ? 'winner' : ''}"><strong>${r.name}</strong><br>Score: ${r.total}<br>Share: ${r.share}</div>`).join('')}
+                </div>
+            </div>`).join('');
+    }
+
+    function clearAllHistory() { if (confirm("Wipe all logs?")) { gameHistory = []; localStorage.removeItem('rummy_history'); renderGameHistory(); } }
+</script>
+</body>
+</html>
