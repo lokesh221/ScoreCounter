@@ -14,34 +14,32 @@
         h1 { font-size: 1.5rem; } h2 { font-size: 1.2rem; border-bottom: 2px solid var(--light); padding-bottom: 5px; }
         .setup-section { display: flex; gap: 8px; margin-bottom: 15px; justify-content: center; align-items: center; flex-wrap: wrap; }
         .menu-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; max-width: 500px; margin: 0 auto; }
-        input[type="text"], input[type="number"] { padding: 10px; border: 2px solid #bdc3c7; border-radius: 6px; font-size: 16px; outline: none; }
+        input[type="text"], input[type="number"], select { padding: 10px; border: 2px solid #bdc3c7; border-radius: 6px; font-size: 16px; outline: none; }
         button, .btn-action { padding: 12px 16px; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; justify-content: center; touch-action: manipulation; }
         .btn-primary { background: var(--primary); color: white; } .btn-accent { background: var(--accent); color: white; } .btn-danger { background: var(--danger); color: white; }
         .roster-box { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; background: var(--light); padding: 12px; border-radius: 8px; width: 100%; box-sizing: border-box; min-height: 50px; }
         
-        /* Safe Tap Profile Selection Targets */
         .player-chip { padding: 12px 18px; background: #fff; border: 2px solid #bdc3c7; border-radius: 20px; font-weight: 500; display: inline-flex; align-items: center; font-size: 15px; touch-action: manipulation; cursor: pointer; transition: all 0.2s; }
         .player-chip.selected { background: var(--primary); color: white; border-color: var(--primary); }
         .player-chip.delete-mode-active { border: 2px dashed var(--danger); background: #fdf2f2; color: var(--danger); }
         
-        /* Excel Grid Preservation Elements */
         .table-container { overflow-x: auto; margin-bottom: 15px; width: 100%; border: 1px solid #bdc3c7; border-radius: 6px; background: #fff; -webkit-overflow-scrolling: touch; }
         table { width: 100%; border-collapse: collapse; text-align: center; font-size: var(--dynamic-font-size); }
         th, td { padding: 0; border: 1px solid #bdc3c7; white-space: nowrap; min-width: 75px; height: 45px; }
         th { background: var(--primary); color: white; font-weight: 600; padding: 10px 4px; }
         .player-header-wrap { max-width: 95px; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: middle; }
         
-        /* Edge to Edge Excel-Style Inputs */
-        table input[type="number"] { width: 100%; height: 100%; border: none; padding: 0; margin: 0; text-align: center; font-size: 16px; background: transparent; border-radius: 0; box-sizing: border-box; }
-        table input[type="number"]:focus { background: #fff; outline: 2px solid var(--accent); outline-offset: -2px; }
+        /* Full-Cell Interactive Elements */
+        table input[type="number"], table select { width: 100%; height: 100%; border: none; padding: 0; margin: 0; text-align: center; font-size: 16px; background: transparent; border-radius: 0; box-sizing: border-box; -webkit-appearance: none; -moz-appearance: none; appearance: none; }
+        table select { text-align-last: center; font-weight: bold; color: var(--primary); cursor: pointer; }
+        table input[type="number"]:focus, table select:focus { background: #fff; outline: 2px solid var(--accent); outline-offset: -2px; }
         
         tr.totals-row { background: #eaeded; font-weight: bold; border-top: 3px solid var(--primary); }
         tr.totals-row td { padding: 10px 4px; }
         tr.share-row { background: #fcf3cf; font-weight: bold; }
         
         .round-num-col { min-width: 50px; font-weight: bold; color: var(--primary); }
-        .dealer-col { min-width: 55px; }
-        .dealer-radio { width: 18px; height: 18px; cursor: pointer; margin: 0 auto; display: block; }
+        .dealer-col { min-width: 90px; background: #fcf8e3; }
         .leader-highlight { background-color: var(--leader-bg) !important; color: var(--leader-text) !important; font-weight: bold; }
         
         .history-item { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 10px; margin-bottom: 10px; font-size: 14px; }
@@ -101,7 +99,7 @@
     let savedProfiles = JSON.parse(localStorage.getItem('rummy_profiles')) || [];
     let gameHistory = JSON.parse(localStorage.getItem('rummy_history')) || [];
     let selectedForGame = [], players = [], rounds = [], winShares = [], gameActive = false, deleteMode = false;
-    let dealerTracker = []; // Array tracking indices of dealers per round
+    let dealerTracker = []; // Stores the index of the dealer for each round index
 
     window.onload = () => { renderRosterSelector(); renderGameHistory(); updateTableStructure(); if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js'); };
 
@@ -171,10 +169,14 @@
 
         document.getElementById('h-target').innerHTML = `<tr><th class="dealer-col">Dealer</th><th class="round-num-col">Round</th>${players.map((p, i) => `<th id="header-p${i}"><span class="player-header-wrap">${p}</span></th>`).join('')}</tr>`;
         
-        // Input row with dynamic dealer indicator mapping
+        // Input row containing an interactive dealer selector dropdown
         const currentDealerIdx = dealerTracker[rounds.length] !== undefined ? dealerTracker[rounds.length] : 0;
         document.getElementById('input-row').innerHTML = `
-            <td class="dealer-col"><input type="radio" name="active-dealer" class="dealer-radio" checked onclick="setManualDealer(${rounds.length}, ${currentDealerIdx})"></td>
+            <td class="dealer-col">
+                <select id="active-dealer-select" onchange="dealerTracker[rounds.length] = parseInt(this.value)">
+                    ${players.map((p, i) => `<option value="${i}" ${i === currentDealerIdx ? 'selected' : ''}>♠ ${p}</option>`).join('')}
+                </select>
+            </td>
             <td class="round-num-col">R${rounds.length + 1}</td>
             ${players.map((_, i) => `<td><input type="number" class="score-input" data-idx="${i}" placeholder="0" onkeydown="if(event.key==='Enter'){event.preventDefault(); ${i === players.length-1 ? 'submitRound()' : `document.querySelector('.score-input[data-idx=\\'${i+1}\\']').focus()`}}"></td>`).join('')}`;
         
@@ -184,18 +186,16 @@
         renderRounds();
     }
 
-    function setManualDealer(roundIdx, playerIdx) {
-        dealerTracker[roundIdx] = playerIdx;
-    }
-
     function submitRound() {
         const nextRoundIndex = rounds.length + 1;
-        // Determine dealer for the next upcoming round sequentially
-        const prevDealer = dealerTracker[rounds.length] !== undefined ? dealerTracker[rounds.length] : 0;
-        dealerTracker[nextRoundIndex] = (prevDealer + 1) % players.length;
+        
+        // Grab current choice, then compute next rotational player for default upcoming round state
+        const currentDealerIdx = dealerTracker[rounds.length] !== undefined ? dealerTracker[rounds.length] : 0;
+        dealerTracker[nextRoundIndex] = (currentDealerIdx + 1) % players.length;
 
         rounds.push(players.map((_, i) => parseInt(document.querySelector(`.score-input[data-idx="${i}"]`).value) || 0));
         updateTableStructure();
+        
         const firstInput = document.querySelector('.score-input[data-idx="0"]');
         if (firstInput) firstInput.focus();
     }
@@ -203,18 +203,14 @@
     function renderRounds() {
         document.getElementById('rounds-body').innerHTML = rounds.map((r, ri) => `
             <tr>
-                <td class="dealer-col"><input type="radio" name="dealer-r${ri}" class="dealer-radio" ${dealerTracker[ri] === dealerTracker[ri] && dealerTracker[ri] !== undefined ? (dealerTracker[ri] === dealerTracker[ri] ? 'checked' : '') : ''} onclick="setManualDealer(${ri}, ${dealerTracker[ri]})" disabled></td>
+                <td class="dealer-col">
+                    <select onchange="dealerTracker[${ri}] = parseInt(this.value); updateTableStructure();">
+                        ${players.map((p, i) => `<option value="${i}" ${i === dealerTracker[ri] ? 'selected' : ''}>♠ ${p}</option>`).join('')}
+                    </select>
+                </td>
                 <td class="round-num-col">R${ri + 1}</td>
                 ${r.map((score, pi) => `<td><input type="number" value="${score}" onchange="rounds[${ri}][${pi}]=parseInt(this.value)||0; recalculateTotals();"></td>`).join('')}
             </tr>`).join('');
-        
-        // Reposition historic radio selections visually
-        rounds.forEach((_, ri) => {
-            const dIdx = dealerTracker[ri];
-            document.getElementsByName(`dealer-r${ri}`).forEach((radio, idx) => {
-                // Dummy check alignment framework logic sync
-            });
-        });
         
         recalculateTotals();
     }
